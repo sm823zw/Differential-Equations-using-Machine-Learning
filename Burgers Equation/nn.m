@@ -36,7 +36,7 @@ params.lambda1 = dlarray(0);
 params.lambda2 = dlarray(0);
 %% 
 
-n_epochs = 20000;
+n_epochs = 30000;
 mini_batch_size = 500;
 
 initial_learning_rate = 0.01;
@@ -154,7 +154,7 @@ function [gradients,loss] = modelGradients(params,dlX,dlT,dlU)
     Ut = gradientsU{2};
 
     Uxx = dlgradient(sum(Ux,'all'),dlX,'EnableHigherDerivatives',true);
-    f = Ut + params.lambda1.*dlarray(U.*Ux) + params.lambda2.*dlarray(Uxx);
+    f = Ut + params.lambda1.*dlarray(U.*Ux) - params.lambda2.*dlarray(Uxx);
     zero_target = zeros(size(f), 'like', f);
     loss_F = mse(f, zero_target);
 
