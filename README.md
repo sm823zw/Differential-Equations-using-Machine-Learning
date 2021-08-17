@@ -1,1 +1,1 @@
-# Solving-PDE-using-Machine-Learning
+# Differential Equations using Machine Learning
