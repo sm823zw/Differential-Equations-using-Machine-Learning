@@ -2,13 +2,16 @@ clc;
 clear;
 close all;
 
-data = load('data.mat').data;
+% Load Data.
+data = load('data_noisy.mat').data;
 X = data(:, 1);
 T = data(:, 2);
 U = data(:, 3);
 data = arrayDatastore(data);
 %% 
 
+% Construct the NN architecture and initialize the weights and learnable
+% parameters.
 n_layers = 9;
 n_neurons = 20;
 
@@ -36,6 +39,7 @@ params.lambda1 = dlarray(0);
 params.lambda2 = dlarray(0);
 %% 
 
+% Training hyper-paramaters
 n_epochs = 30000;
 mini_batch_size = 500;
 
@@ -43,6 +47,7 @@ initial_learning_rate = 0.01;
 decay_rate = 0.001;
 execution_environment = "auto";
 
+% Create mini-batch iterator
 mbq = minibatchqueue(data, ...
     'MiniBatchSize',mini_batch_size, ...
     'MiniBatchFormat','BC', ...
@@ -52,8 +57,11 @@ dlX = dlarray(X,'CB');
 dlT = dlarray(T,'CB');
 dlU = dlarray(U,'CB');
 
+% Initialize arrays to store info about gradients required during adam
+% optimization
 average_grad = [];
 average_sq_grad = [];
+
 
 accfun = dlaccelerate(@modelGradients);
 
@@ -68,19 +76,26 @@ grid on
 start = tic;
 iteration = 0;
 
+% Start training
 for epoch = 1:n_epochs
+    % Reset and shuffle training data
     reset(mbq);
     while hasdata(mbq)
         iteration = iteration + 1;
+        
+        % Fetch new batch for training
         dlXT = next(mbq);
         dlX = dlXT(1,:);
         dlT = dlXT(2,:);
         dlU = dlXT(3,:);
 
+        % Compute the gradients and loss
         [gradients,loss] = dlfeval(accfun,params,dlX,dlT,dlU);
 
+        % Perform learning rate decay
         learning_rate = initial_learning_rate/ (1+decay_rate*iteration);
 
+        % Perform Adam optimization and update the parameters
         [params,average_grad,average_sq_grad] = adamupdate(params,gradients,average_grad, ...
             average_sq_grad,iteration,learning_rate);
     end
@@ -97,6 +112,7 @@ for epoch = 1:n_epochs
 end
 %% 
 
+% Test the model.
 t_test = [0.25 0.5 0.75 1];
 n_predictions = 1001;
 X_test = linspace(-1,1,n_predictions);
@@ -130,6 +146,7 @@ subplot(2,2,2)
 legend('Predicted','True')
 %% 
 
+% Function that returns the true solution of Burger's equation at times t.
 function U = solve_burgers(X,t,nu)
     f = @(y) exp(-cos(pi*y)/(2*pi*nu));
     g = @(y) exp(-(y.^2)/(4*nu*t));
@@ -145,24 +162,36 @@ function U = solve_burgers(X,t,nu)
     end
 end
 
+% Function that returns the gradients and loss for given batch of training samples. 
 function [gradients,loss] = modelGradients(params,dlX,dlT,dlU)
+    
+    % Obtain U by forward-prop.
     U = model(params, dlX, dlT);
+    
+    % Compute loss_U.
     loss_U = mse(U, dlU);
 
+    % Obtain gradients of U w.r.t X and T and Ux w.r.t X.
     gradientsU = dlgradient(sum(U,'all'),{dlX,dlT},'EnableHigherDerivatives',true);
     Ux = gradientsU{1};
     Ut = gradientsU{2};
-
     Uxx = dlgradient(sum(Ux,'all'),dlX,'EnableHigherDerivatives',true);
+    
+    % Compute U.
     f = Ut + params.lambda1.*dlarray(U.*Ux) - params.lambda2.*dlarray(Uxx);
     zero_target = zeros(size(f), 'like', f);
+    
+    % Compute loss_F.
     loss_F = mse(f, zero_target);
 
+    % Compute total loss.
     loss = loss_F + loss_U;
 
+    % Obtain gradients of loss w.r.t each learnable parameter.
     gradients = dlgradient(loss, params);
 end
 
+% Function that performs forward-prop.
 function dlU = model(params,dlX,dlT)
     dlXT = [dlX;dlT];
     n_layers = numel(fieldnames(params))-2;
@@ -178,11 +207,13 @@ function dlU = model(params,dlX,dlT)
     end
 end
 
+% Function to perform 'He' initialization of weights.
 function weights = initializeHe(sz,n_inp)
     weights = randn(sz,'single') * sqrt(2/n_inp);
     weights = dlarray(weights);
 end
 
+% Function to perform 'Zero' initialization of bias or weights.
 function parameter = initializeZeros(sz)
     parameter = zeros(sz,'single');
     parameter = dlarray(parameter);

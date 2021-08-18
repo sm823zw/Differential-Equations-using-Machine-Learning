@@ -22,11 +22,18 @@ for yi = 1:vtn
         i = i+1;
     end
 end
+
 ir = randperm(n);
 data = data(ir,:);
 scatter(data(:,1), data(:,2), 'filled', 'LineWidth', 1)
+
+% Noise-less data
 csvwrite('data.csv', data);
 
+% Noisy data
+noise = 0.01;
+data(:,3) = data(:,3) + noise.*std(data(:,3)).*randn(size(data(:,3)));
+csvwrite('data_noisy.csv', data);
 
 function U = solve_burgers(X,t,nu)
     f = @(y) exp(-cos(pi*y)/(2*pi*nu));
