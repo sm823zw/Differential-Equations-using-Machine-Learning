@@ -23,3 +23,6 @@ Navier-Stokes Equation -
 ![image](https://user-images.githubusercontent.com/49569284/134472128-0ea7a8a8-68fa-4dd2-a625-264b8d582f4d.png)
 ![Loss curve](https://github.com/sm823zw/Differential-Equations-using-Machine-Learning/blob/main/Navier-Stokes%20Equation/Figures/loss.jpg)
 
+Schrodinger Equation -
+
+![image](https://user-images.githubusercontent.com/49569284/135728143-a95b0710-9a4b-4c59-a029-e8bfef050a1c.png)
