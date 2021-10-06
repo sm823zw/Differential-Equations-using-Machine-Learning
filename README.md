@@ -11,6 +11,7 @@ Burger's Equation -
 Following is the output comparison between the actual and predicted output at given time instants (Burger's Equation)
 
 ![alt text](https://github.com/sm823zw/Differential-Equations-using-Machine-Learning/blob/main/Burgers%20Equation/Figures/output.jpg)
+![alt text](https://github.com/sm823zw/Differential-Equations-using-Machine-Learning/blob/main/Burgers%20Equation/Figures/output1.jpg)
 ![Loss curve](https://github.com/sm823zw/Differential-Equations-using-Machine-Learning/blob/main/Burgers%20Equation/Figures/loss.jpg)
 ![image](https://user-images.githubusercontent.com/49569284/134472252-46f4a584-2d1c-441d-b270-18684dd4bfbf.png)
 ![image](https://user-images.githubusercontent.com/49569284/134472356-daa8b08e-badf-4216-965b-a2516d429bae.png)
